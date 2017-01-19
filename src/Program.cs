@@ -24,22 +24,45 @@ namespace forema
 			foreach (var color in amanadasBlue.Where(b => !isBlue(b)))
 				Console.WriteLine($"Consider removing {color} from blues");
 
-			WriteDocument("all.html", Dresses.GetAll(), allColors.OrderBy(c => c.Name));
-			WriteDocument("amanda-blues.html", Dresses.GetAll(), amanadasBlue.OrderByDescending(c => c.R + c.B + c.G));
-			WriteDocument("sorted.html", Dresses.GetAll(), allColors.OrderBy(c => c.R + c.G + c.B));
-			WriteDocument("should-be-blue.html", Dresses.GetAll(), allColors.Where(shouldBeBlue).OrderBy(c => c.R + c.G + c.B));
-			WriteDocument("red.html", Dresses.GetAll(), allColors.Where(isRed).OrderByDescending(c => c.R + c.B + c.G));
-			WriteDocument("green.html", Dresses.GetAll(), allColors.Where(isGreen).OrderByDescending(c => c.R + c.B + c.G));
-			WriteDocument("blue.html", Dresses.GetAll(), allColors.Where(isBlue).OrderByDescending(c => c.R + c.B + c.G));
+			var pages = new[]
+			{
+				new Page("All Dresses","all.html",Dresses.GetAll(),allColors.OrderBy(c=>c.Name)),
+				new Page("All Dresses Dark to Light","sorted.html",Dresses.GetAll(),allColors.OrderBy(c => c.R + c.G + c.B)),
 
-			Console.ReadLine();
+				new Page("Amanda's Blues","amanda-blues.html",Dresses.GetAll(), amanadasBlue.OrderByDescending(c => c.R + c.B + c.G)),
+
+				new Page("Reds","red.html", Dresses.GetAll(), allColors.Where(isRed).OrderByDescending(c => c.R + c.B + c.G)),
+				new Page("Greens","green.html", Dresses.GetAll(), allColors.Where(isGreen).OrderByDescending(c => c.R + c.B + c.G)),
+				new Page("Blues","blue.html", Dresses.GetAll(), allColors.Where(isBlue).OrderByDescending(c => c.R + c.B + c.G))
+			};
+
+			foreach (var page in pages)
+				File.WriteAllText(page.Filename, WriteDocument(page.Name, page.Dresses, page.Colors));
+			File.WriteAllText("index.html", WriteIndex(pages));
 		}
 
-		private static void WriteDocument(string filename, IEnumerable<Dress> dresses, IEnumerable<Color> colors)
+		private static string WriteIndex(IEnumerable<Page> pages)
 		{
 			var html = "<html>\n";
 			html += "\t<head>\n";
-			html += "\t<title>Fórema</title>"
+			html += "\t\t<title>F&oacute;rema</title>\n";
+			html += "\t</head>\n";
+			html += "\t<body style='font-family:arial;'>\n";
+			html += "\t\t<h1>Fórema</h1>\n";
+			html += "\t\t<ul>";
+			foreach (var page in pages)
+				html += $"\t\t\t<li><a href='{page.Filename}'>{page.Name}</a></li>";
+			html += "\t\t</ul>";
+			html += "\t</body>\n";
+			html += "</html>";
+			return html;
+		}
+
+		private static string WriteDocument(string name, IEnumerable<Dress> dresses, IEnumerable<Color> colors)
+		{
+			var html = "<html>\n";
+			html += "\t<head>\n";
+			html += $"\t\t<title>{name}</title>\n";
 			html += "\t\t<style>table,img {width:100%;} td {text-align:center;}</style>\n";
 			html += "\t</head>\n";
 			html += "\t<body style='font-family:arial;'>\n";
@@ -65,7 +88,7 @@ namespace forema
 			html += "\t\t</table>\n";
 			html += "\t</body>\n";
 			html += "</html>";
-			File.WriteAllText(filename, html);
+			return html;
 		}
 	}
 }

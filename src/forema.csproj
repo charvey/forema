@@ -51,6 +51,7 @@
     <Compile Include="Colors.cs" />
     <Compile Include="Dress.cs" />
     <Compile Include="Dresses.cs" />
+    <Compile Include="Page.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TextColorExtension.cs" />
