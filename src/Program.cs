@@ -34,7 +34,7 @@ namespace forema
             var colorSets = new Tuple<string, Color[]>[]
             {
                 Tuple.Create("All Colors",allColors.OrderBy(c=>c.Name).ToArray()),
-                Tuple.Create("Chosen Colors", chosen.ToArray()),
+                Tuple.Create("Chosen Colors", chosen.OrderByDescending(c => c.R + c.G + c.B).ToArray()),
                 Tuple.Create("Dark to Light",allColors.OrderBy(c => c.R + c.G + c.B).ToArray()),
                 Tuple.Create("Reds", allColors.Where(isRed).OrderByDescending(c => c.R + c.B + c.G).ToArray()),
                 Tuple.Create("Greens", allColors.Where(isGreen).OrderByDescending(c => c.R + c.B + c.G).ToArray()),
