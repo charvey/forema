@@ -11,48 +11,71 @@ namespace forema
 		{
 			var allColors = Colors.GetAll();
 
-			var amanadasBlue = new[] { "Capri", "Malibu", "Mint", "Pool", "Sea Glass", "Spa" }
+			var chosen = new[] { "Capri", "Malibu", "Mint", "Pool", "Sea Glass", "Spa" }
 				.Select(b => allColors.Single(c => c.Name == b));
 
 			Func<Color, bool> isBlue = color => color.B > (color.G + color.R) / 2 && color.B >= color.G && color.B >= color.R;
 			Func<Color, bool> isRed = color => color.R > (color.G + color.B) / 2 && color.R >= color.G && color.R >= color.B;
 			Func<Color, bool> isGreen = color => color.G > (color.R + color.B) / 2 && color.G >= color.R && color.G >= color.B;
-			Func<Color, bool> shouldBeBlue = color => isBlue(color) && !amanadasBlue.Contains(color);
+			Func<Color, bool> shouldBeBlue = color => isBlue(color) && !chosen.Contains(color);
 
 			foreach (var color in allColors.Where(shouldBeBlue))
-				Console.WriteLine($"Consider adding {color.Name} to blues");
-			foreach (var color in amanadasBlue.Where(b => !isBlue(b)))
-				Console.WriteLine($"Consider removing {color.Name} from blues");
+				Console.WriteLine($"Consider adding {color.Name} to Chosen");
+			foreach (var color in chosen.Where(b => !isBlue(b)))
+				Console.WriteLine($"Consider removing {color.Name} from Chosen");
 
-			var pages = new[]
-			{
-				new Page("All Dresses","all.html",Dresses.GetAll(),allColors.OrderBy(c=>c.Name)),
-				new Page("All Dresses Dark to Light","sorted.html",Dresses.GetAll(),allColors.OrderBy(c => c.R + c.G + c.B)),
+            var dressSets = new Tuple<string, Dress[]>[]
+            {
+                Tuple.Create("All Dresses",Dresses.GetAll()),
+                Tuple.Create("Early Ideas",Dresses.FirstPass()),
+                Tuple.Create("Final Choices",Dresses.SecondPass()),
+            };
 
-				new Page("Amanda's Blues","amanda-blues.html",Dresses.GetAll(), amanadasBlue.OrderByDescending(c => c.R + c.B + c.G)),
+            var colorSets = new Tuple<string, Color[]>[]
+            {
+                Tuple.Create("All Colors",allColors.OrderBy(c=>c.Name).ToArray()),
+                Tuple.Create("Chosen Colors", chosen.ToArray()),
+                Tuple.Create("Dark to Light",allColors.OrderBy(c => c.R + c.G + c.B).ToArray()),
+                Tuple.Create("Reds", allColors.Where(isRed).OrderByDescending(c => c.R + c.B + c.G).ToArray()),
+                Tuple.Create("Greens", allColors.Where(isGreen).OrderByDescending(c => c.R + c.B + c.G).ToArray()),
+                Tuple.Create("Blues", allColors.Where(isBlue).OrderByDescending(c => c.R + c.B + c.G).ToArray())
+            };
 
-				new Page("Reds","red.html", Dresses.GetAll(), allColors.Where(isRed).OrderByDescending(c => c.R + c.B + c.G)),
-				new Page("Greens","green.html", Dresses.GetAll(), allColors.Where(isGreen).OrderByDescending(c => c.R + c.B + c.G)),
-				new Page("Blues","blue.html", Dresses.GetAll(), allColors.Where(isBlue).OrderByDescending(c => c.R + c.B + c.G))
-			};
-
-			foreach (var page in pages)
-				File.WriteAllText(page.Filename, WriteDocument(page.Name, page.Dresses, page.Colors));
-			File.WriteAllText("index.html", WriteIndex(pages));
+            File.WriteAllText("index.html", WriteIndex(dressSets, colorSets));
 		}
 
-		private static string WriteIndex(IEnumerable<Page> pages)
+		private static string WriteIndex(Tuple<string, Dress[]>[] dressSets, Tuple<string, Color[]>[] colorSets)
 		{
 			var html = "<html>\n";
 			html += "\t<head>\n";
 			html += "\t\t<title>F&oacute;rema</title>\n";
+            html += "\t\t<style>\n";
+            html += "\t\t\ttd,th {border: 1px solid lightgray; padding: 10px}\n";
+            html += "\t\t</style>\n";
 			html += "\t</head>\n";
 			html += "\t<body style='font-family:arial;'>\n";
 			html += "\t\t<h1>Fórema</h1>\n";
-			html += "\t\t<ul>";
-			foreach (var page in pages)
-				html += $"\t\t\t<li><a href='{page.Filename}'>{page.Name}</a></li>";
-			html += "\t\t</ul>";
+			html += "\t\t<table style='border-collapse: collapse'>\n";
+            html += "\t\t\t<tr>\n";
+            html += "\t\t\t\t<th></th>\n";
+            foreach (var dressSet in dressSets)
+                html += $"\t\t\t\t<th>{dressSet.Item1}</th>\n";
+            html += "\t\t\t</tr>\n";
+            foreach (var colorSet in colorSets)
+            {
+                html += "\t\t\t<tr>\n";
+                html += $"\t\t\t\t<th>{colorSet.Item1}</th>\n";
+                foreach (var dressSet in dressSets)
+                {
+                    html += $"\t\t\t\t<td>\n";
+                    var filename = (dressSet.Item1 + "_" + colorSet.Item1).Replace(' ', '-') + ".html";
+                    File.WriteAllText(filename, WriteDocument(dressSet.Item1 + " - " + colorSet.Item1, dressSet.Item2, colorSet.Item2));
+                    html += $"\t\t\t\t\t<a href='{filename}'>{dressSet.Item2.Length * colorSet.Item2.Length} Dresses</a>\n";
+                    html += $"\t\t\t\t</td>\n";
+                }
+                html += "\t\t\t</tr>\n";
+            }
+            html += "\t\t</table>\n";
 			html += "\t</body>\n";
 			html += "</html>";
 			return html;
