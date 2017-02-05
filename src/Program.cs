@@ -11,7 +11,7 @@ namespace forema
 		{
 			var allColors = Colors.GetAll();
 
-			var chosen = new[] { "Capri", "Malibu", "Mint", "Pool", "Sea Glass", "Spa" }
+			var chosen = new[] { "Capri", "Ice Blue", "Malibu", "Meadow", "Mint", "Oasis", "Pool", "Spa" }
 				.Select(b => allColors.Single(c => c.Name == b));
 
 			Func<Color, bool> isBlue = color => color.B > (color.G + color.R) / 2 && color.B >= color.G && color.B >= color.R;
