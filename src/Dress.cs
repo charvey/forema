@@ -1,8 +1,4 @@
-﻿using HtmlAgilityPack;
-using System;
-using System.Net.Http;
-
-namespace forema
+﻿namespace forema
 {
 	public class Dress
 	{
@@ -13,10 +9,14 @@ namespace forema
 		{
 			get
 			{
-				return document.Value.DocumentNode
+				return HtmlDocuments.GetAsync(Link).Result.DocumentNode
 					.SelectSingleNode("//h1").NextSibling
 					.InnerText.Trim();
 			}
+		}
+		public string Image(Color color)
+		{
+			return $"http://img.davidsbridal.com/is/image/DavidsBridalInc/Image-{Style}-{ProductId}-{color.Name.Replace(" ", "")}?wid=508&hei=763&fmt=jpg";
 		}
 
 		public Dress(string style, string productId, string link)
@@ -24,17 +24,6 @@ namespace forema
 			this.Style = style;
 			this.ProductId = productId;
 			this.Link = link;
-
-			this.document = new Lazy<HtmlDocument>(() =>
-			{
-				var html = httpClient.GetStringAsync(link);
-				var document = new HtmlDocument();
-				document.LoadHtml(html.Result);
-				return document;
-			});
 		}
-
-		private static HttpClient httpClient = new HttpClient();
-		private Lazy<HtmlDocument> document;
 	}
 }
